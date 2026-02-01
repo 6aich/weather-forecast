@@ -9,12 +9,19 @@ body, html {
   height: 100%;
   font-family: Arial, sans-serif;
   display: flex;
+  flex-direction: column;
+}
+
+/* Top dashboard container */
+.dashboard {
+  display: flex;
+  height: 300px; /* fixed height for dashboard */
 }
 
 /* Left panel - light green */
 .left-panel {
   width: 200px;
-  background: #90EE90; /* light green */
+  background: #90EE90;
   padding: 10px;
   box-sizing: border-box;
 }
@@ -41,7 +48,7 @@ body, html {
 /* Middle panel - light blue */
 .middle-panel {
   flex: 1;
-  background: #ADD8E6; /* light blue */
+  background: #ADD8E6;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -53,10 +60,16 @@ body, html {
 .middle-panel input {
   padding: 10px;
   margin: 5px;
-  width: 60%;
+  width: 70%;
   border-radius: 5px;
   border: 1px solid #888;
   font-size: 16px;
+}
+.middle-panel button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  margin-top: 10px;
 }
 .middle-panel p {
   margin-bottom: 15px;
@@ -67,7 +80,7 @@ body, html {
 /* Right panel - purple */
 .right-panel {
   width: 200px;
-  background: #800080; /* purple */
+  background: #800080;
   color: white;
   padding: 10px;
   box-sizing: border-box;
@@ -91,54 +104,119 @@ body, html {
   background: #BA55D3;
 }
 
-/* Shared styles */
-ul li {
-  user-select: none;
+/* Weather display under dashboard */
+.weather-output {
+  flex: 1;
+  background: #f0f0f0;
+  color: #000;
+  padding: 20px;
+  text-align: center;
+  font-size: 20px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- Left panel -->
-<div class="left-panel">
-  <h2>Cities</h2>
-  <ul id="cityList">
-    <li>New York</li>
-    <li>London</li>
-    <li>Melbourne</li>
-    <li>Sydney</li>
-    <li>Hydrabad</li>
-    <li>Maboonagur</li>
-    <li>Tokyo</li>
-    <li>Hongkong</li>
-    <li>Balarat</li>
-  </ul>
+<div class="dashboard">
+  <!-- Left panel -->
+  <div class="left-panel">
+    <h2>Cities</h2>
+    <ul id="cityList">
+      <li onclick="selectLocation('Melbourne')">Melbourne</li>
+      <li onclick="selectLocation('Sydney')">Sydney</li>
+      <li onclick="selectLocation('Tokyo')">Tokyo</li>
+      <li onclick="selectLocation('New York')">New York</li>
+      <li onclick="selectLocation('Hyderabad')">Hyderabad</li>
+      <li onclick="selectLocation('Ballarat')">Ballarat</li>
+      <li onclick="selectLocation('Hong Kong')">Hong Kong</li>
+    </ul>
+  </div>
+
+  <!-- Middle panel -->
+  <div class="middle-panel">
+    <p>You can click what's on the list. The search bars are if you can't find the country you are looking for.</p>
+    <input id="countryInput" placeholder="Type Country">
+    <input id="cityInput" placeholder="Type City or Suburb">
+    <button onclick="sendButtonClicked()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" aria-hidden="true" class="icon">
+        <use href="/cdn/assets/sprites-core-c9exbsc1.svg#01bab7" fill="currentColor"></use>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Right panel -->
+  <div class="right-panel">
+    <h2>Countries</h2>
+    <ul id="countryList">
+      <li onclick="selectLocation('Australia')">Australia</li>
+      <li onclick="selectLocation('India')">India</li>
+      <li onclick="selectLocation('Dubai')">Dubai</li>
+      <li onclick="selectLocation('Malaysia')">Malaysia</li>
+      <li onclick="selectLocation('Thailand')">Thailand</li>
+      <li onclick="selectLocation('Singapore')">Singapore</li>
+      <li onclick="selectLocation('Vietnam')">Vietnam</li>
+      <li onclick="selectLocation('Afghanistan')">Afghanistan</li>
+      <li onclick="selectLocation('Bangladesh')">Bangladesh</li>
+      <li onclick="selectLocation('Africa')">Africa</li>
+    </ul>
+  </div>
 </div>
 
-<!-- Middle panel -->
-<div class="middle-panel">
-  <p>You can click what's on the list. The search bars are if you can't find the country you are looking for.</p>
-  <input id="countryInput" placeholder="Type Country">
-  <input id="cityInput" placeholder="Type City or Suburb">
+<!-- Weather output under dashboard -->
+<div class="weather-output" id="out">
+  Click a city or country to see the weather here.
 </div>
 
-<!-- Right panel -->
-<div class="right-panel">
-  <h2>Countries</h2>
-  <ul id="countryList">
-    <li>Australia</li>
-    <li>Indai</li>
-    <li>Dubi</li>
-    <li>Maliasa</li>
-    <li>Thiland</li>
-    <li>Singapoor</li>
-    <li>Veatenam</li>
-    <li>Avganistan</li>
-    <li>Bangladesh</li>
-    <li>Africa</li>
-  </ul>
-</div>
+<script>
+let intervalId;
+
+function calculateWindChill(tempC, windKmh){
+  if(tempC > 10 || windKmh < 4.8) return tempC.toFixed(1);
+  const v = windKmh, t = tempC;
+  return (13.12 + 0.6215*t - 11.37*Math.pow(v,0.16) + 0.3965*t*Math.pow(v,0.16)).toFixed(1);
+}
+
+async function selectLocation(name){
+  if(intervalId) clearInterval(intervalId);
+
+  try{
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1`);
+    const geo = await geoRes.json();
+    if(!geo.results){document.getElementById("out").textContent="Location not found"; return;}
+    const {latitude, longitude, timezone} = geo.results[0];
+
+    async function updateWeather(){
+      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+      const w = await weatherRes.json();
+      const temp = w.current_weather.temperature;
+      const wind = w.current_weather.windspeed;
+      const chill = calculateWindChill(temp, wind);
+      const now = new Date().toLocaleString("en-AU",{timeZone: timezone,hour12:true,hour:"2-digit",minute:"2-digit",second:"2-digit"});
+      document.getElementById("out").innerHTML =
+        `<b>${name}</b><br>`+
+        `Temp: ${temp} °C<br>`+
+        `Wind: ${wind} km/h<br>`+
+        `Wind Chill: ${chill} °C<br>`+
+        `Local Time: ${now}`;
+    }
+
+    updateWeather();
+    intervalId = setInterval(updateWeather,1000);
+
+  }catch{
+    document.getElementById("out").textContent="Error fetching location";
+  }
+}
+
+// Send button functionality
+function sendButtonClicked(){
+  const country = document.getElementById("countryInput").value;
+  const city = document.getElementById("cityInput").value;
+  if(city) selectLocation(city);
+  else if(country) selectLocation(country);
+}
+</script>
 
 </body>
 </html>
