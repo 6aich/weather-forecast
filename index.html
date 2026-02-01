@@ -20,7 +20,6 @@
   <p id="description"></p>
   <p>Temperature: <span id="temp"></span>°C</p>
   <p>Humidity: <span id="humidity"></span>%</p>
-  <p>Local Time: <span id="time"></span></p>
 </div>
 
 <script>
@@ -107,7 +106,7 @@ function animateWave(){
 }
 animateWave();
 
-// --- Real weather & time ---
+// --- Real weather ---
 async function getWeather(city){
   city = city || document.getElementById('cityInput').value;
   if(!city) return;
@@ -122,21 +121,12 @@ async function getWeather(city){
     document.getElementById('temp').innerText = current.temp_C;
     document.getElementById('humidity').innerText = current.humidity;
 
-    const timezonesResp = await fetch('https://worldtimeapi.org/api/timezone');
-    const timezones = await timezonesResp.json();
-    let tz = timezones.find(tz=>tz.toLowerCase().includes(city.toLowerCase())) || 'Etc/UTC';
-    const timeResp = await fetch(`https://worldtimeapi.org/api/timezone/${tz}`);
-    const timeData = await timeResp.json();
-    const datetime = new Date(timeData.datetime);
-    document.getElementById('time').innerText = datetime.toLocaleTimeString();
-
     document.getElementById('weather').style.display='block';
   }catch(err){
     document.getElementById('cityName').innerText = city;
     document.getElementById('description').innerText='Weather not found';
     document.getElementById('temp').innerText='-';
     document.getElementById('humidity').innerText='-';
-    document.getElementById('time').innerText='-';
     document.getElementById('weather').style.display='block';
   }
 }
