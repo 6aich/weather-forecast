@@ -33,23 +33,43 @@ input,button{
 
 <div class="box">
   <input id="city" placeholder="City name">
-  <button onclick="weather()">Go</button>
+  <button onclick="getWeather()">Go</button>
   <div id="out"></div>
 </div>
 
 <script>
-const key = "YOUR_API_KEY_HERE";
+const apiKey = "YOUR_API_KEY_HERE";
 
-function weather(){
-  let c = document.getElementById("city").value;
-  fetch(`https://api.openweathermap.org/data/2.5/weather?q=${c}&units=metric&appid=${key}`)
-  .then(r=>r.json())
-  .then(d=>{
-    document.getElementById("out").innerHTML =
-      d.cod!=200 ? "City not found" :
-      `${d.name}<br>${d.main.temp}°C<br>${d.weather[0].description}`;
+function getWeather(){
+  const city = document.getElementById("city").value.trim();
+  const out = document.getElementById("out");
+
+  if(!city){
+    out.textContent = "Enter a city name";
+    return;
+  }
+
+  fetch(
+    "https://api.openweathermap.org/data/2.5/weather?q="
+    + encodeURIComponent(city)
+    + "&units=metric&appid="
+    + apiKey
+  )
+  .then(res => {
+    if(!res.ok) throw new Error("bad response");
+    return res.json();
+  })
+  .then(data => {
+    out.innerHTML =
+      "<b>" + data.name + "</b><br>" +
+      data.main.temp + "°C<br>" +
+      data.weather[0].description;
+  })
+  .catch(() => {
+    out.textContent = "City not found or API key error";
   });
 }
 </script>
 </body>
 </html>
+
