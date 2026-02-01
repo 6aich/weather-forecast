@@ -38,38 +38,36 @@ input,button{
 </div>
 
 <script>
-const apiKey = "YOUR_API_KEY_HERE";
+const apiKey = "PUT_YOUR_REAL_KEY_HERE";
 
 function getWeather(){
   const city = document.getElementById("city").value.trim();
   const out = document.getElementById("out");
 
   if(!city){
-    out.textContent = "Enter a city name";
+    out.textContent = "Enter a city";
     return;
   }
 
-  fetch(
-    "https://api.openweathermap.org/data/2.5/weather?q="
-    + encodeURIComponent(city)
-    + "&units=metric&appid="
-    + apiKey
-  )
-  .then(res => {
-    if(!res.ok) throw new Error("bad response");
-    return res.json();
-  })
-  .then(data => {
-    out.innerHTML =
-      "<b>" + data.name + "</b><br>" +
-      data.main.temp + "°C<br>" +
-      data.weather[0].description;
-  })
-  .catch(() => {
-    out.textContent = "City not found or API key error";
-  });
+  fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${apiKey}`)
+    .then(res => res.json())
+    .then(data => {
+      if(data.cod !== 200){
+        out.textContent = data.message;
+        return;
+      }
+
+      out.innerHTML =
+        `<b>${data.name}</b><br>
+         ${data.main.temp} °C<br>
+         ${data.weather[0].description}`;
+    })
+    .catch(err => {
+      out.textContent = "Network error";
+      console.error(err);
+    });
 }
 </script>
+
 </body>
 </html>
-
