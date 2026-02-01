@@ -11,7 +11,7 @@ body {
   height:100vh;
 }
 
-/* Left sidebar */
+/* Sidebar */
 .sidebar {
   width:200px;
   background:#2c3e50;
@@ -19,14 +19,15 @@ body {
   padding:20px;
   box-sizing:border-box;
 }
-.sidebar h2{
+.sidebar h2 {
   text-align:center;
+  margin-bottom:20px;
 }
 .sidebar ul {
   list-style:none;
   padding:0;
 }
-.sidebar li{
+.sidebar li {
   padding:10px;
   cursor:pointer;
   border-radius:5px;
@@ -34,11 +35,11 @@ body {
   background:#34495e;
   text-align:center;
 }
-.sidebar li:hover{
+.sidebar li:hover {
   background:#1abc9c;
 }
 
-/* Right panel */
+/* Main panel */
 .main {
   flex:1;
   background:orange;
@@ -49,11 +50,92 @@ body {
   align-items:center;
   font-size:20px;
   position:relative;
+  padding:20px;
+  box-sizing:border-box;
+  text-align:center;
 }
 
 /* Weather header with emoji */
 .weather-header {
   display:flex;
   align-items:center;
-  font-size:24px;
+  font-size:28px;
   margin-bottom:20px;
+}
+.weather-header span.wxico2 {
+  font-size:40px;
+  margin-right:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>Cities</h2>
+  <ul id="cityList">
+    <li onclick="selectCity('Melbourne')">Melbourne</li>
+    <li onclick="selectCity('Sydney')">Sydney</li>
+    <li onclick="selectCity('Tokyo')">Tokyo</li>
+    <li onclick="selectCity('London')">London</li>
+    <li onclick="selectCity('New York')">New York</li>
+  </ul>
+</div>
+
+<div class="main">
+  <div class="weather-header">
+    <span class="col-6 col-m-6 wxico2">☀️</span>
+    <div>Weather Forecast</div>
+  </div>
+  <div id="out"></div>
+</div>
+
+<script>
+let intervalId;
+let currentCity = "Melbourne";
+
+function calculateWindChill(tempC, windKmh){
+  if(tempC > 10 || windKmh < 4.8) return tempC.toFixed(1);
+  const v = windKmh, t = tempC;
+  return (13.12 + 0.6215*t - 11.37*Math.pow(v,0.16) + 0.3965*t*Math.pow(v,0.16)).toFixed(1);
+}
+
+async function updateWeather(cityName){
+  try{
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1`);
+    const geo = await geoRes.json();
+    if(!geo.results){document.getElementById("out").textContent="City not found"; return;}
+    const {latitude, longitude, name, timezone} = geo.results[0];
+
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+    const w = await weatherRes.json();
+    const temp = w.current_weather.temperature;
+    const wind = w.current_weather.windspeed;
+    const chill = calculateWindChill(temp, wind);
+
+    const now = new Date().toLocaleString("en-AU",{timeZone: timezone,hour12:true,hour:"2-digit",minute:"2-digit",second:"2-digit"});
+
+    document.getElementById("out").innerHTML =
+      `<b>${name}</b><br>`+
+      `Temp: ${temp} °C<br>`+
+      `Wind: ${wind} km/h<br>`+
+      `Wind Chill: ${chill} °C<br>`+
+      `Local Time: ${now}`;
+  }catch{
+    document.getElementById("out").textContent="Error fetching data";
+  }
+}
+
+function selectCity(cityName){
+  currentCity = cityName;
+  if(intervalId) clearInterval(intervalId);
+  updateWeather(currentCity);
+  intervalId = setInterval(()=>updateWeather(currentCity),1000);
+}
+
+// Start with default city
+selectCity(currentCity);
+</script>
+
+</body>
+</html>
