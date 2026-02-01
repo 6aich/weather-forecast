@@ -3,99 +3,172 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weather App</title>
+<title>Animated Weather Sunset</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        color: #fff;
-        text-align: center;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
 
-    /* Top half: strictly blue to orange */
-    .top-half {
-        background: linear-gradient(to bottom, #2980b9, #f39c12); /* blue to orange */
-        height: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
+/* Top half: sky */
+.sky {
+    position: relative;
+    height: 50vh;
+    background: linear-gradient(to bottom, #2980b9, #f39c12);
+    overflow: hidden;
+}
 
-    h1 {
-        margin: 0;
-        font-size: 2.5em;
-    }
+/* Sun */
+.sun {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    background: yellow;
+    border-radius: 50%;
+    box-shadow: 0 0 50px 20px rgba(255, 223, 0, 0.5);
+    animation: moveSun 10s linear infinite alternate;
+    z-index: 2;
+}
 
-    .input-area {
-        margin-top: 20px;
-    }
+/* Sunlight glow on water */
+.sun-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 50%;
+    background: radial-gradient(ellipse at center, rgba(255,223,0,0.2) 0%, transparent 80%);
+    pointer-events: none;
+}
 
-    input {
-        padding: 10px;
-        border-radius: 5px;
-        border: none;
-        width: 200px;
-        margin-right: 10px;
-    }
+/* Bottom half: water */
+.water {
+    position: relative;
+    height: 50vh;
+    background: #34495e;
+    overflow: hidden;
+}
 
-    button {
-        padding: 10px 15px;
-        border-radius: 5px;
-        border: none;
-        background-color: #fff;
-        color: #2980b9;
-        cursor: pointer;
-        font-weight: bold;
-    }
+/* Wave lines */
+.wave {
+    position: absolute;
+    width: 200%;
+    height: 20px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    bottom: 40%;
+    left: -50%;
+    animation: waveMove 4s linear infinite;
+}
 
-    /* Bottom half: weather info */
-    .bottom-half {
-        background: #34495e; /* dark gray/blue */
-        height: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
+/* Ship */
+.ship {
+    position: absolute;
+    bottom: 10%;
+    width: 80px;
+    height: auto;
+    animation: shipMove 12s linear infinite;
+}
 
-    #weather img {
-        width: 80px;
-    }
+/* Animations */
+@keyframes moveSun {
+    0% { top: -50px; }
+    50% { top: 120%; }
+    100% { top: -50px; }
+}
 
-    #weather {
-        text-align: center;
-    }
+@keyframes waveMove {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(50%); }
+}
+
+@keyframes shipMove {
+    0% { left: -100px; }
+    100% { left: 110%; }
+}
+
+/* Weather input area */
+.weather-input {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+}
+
+input {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+button {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: none;
+    background-color: #fff;
+    color: #2980b9;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Weather display */
+#weather {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.4);
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: #fff;
+    display: none;
+    text-align: center;
+}
 </style>
 </head>
 <body>
-<div class="top-half">
-    <h1>Weather App</h1>
-    <div class="input-area">
+
+<!-- Sky and Sun -->
+<div class="sky">
+    <div class="sun"></div>
+    <div class="sun-glow"></div>
+
+    <!-- Input -->
+    <div class="weather-input">
         <input type="text" id="cityInput" placeholder="Enter city name">
         <button onclick="getWeather()">Get Weather</button>
     </div>
 </div>
 
-<div class="bottom-half">
-    <div id="weather" style="display:none;">
-        <h2 id="cityName"></h2>
-        <img id="weatherIcon" src="" alt="Weather Icon">
-        <p id="description"></p>
-        <p>Temperature: <span id="temp"></span>°C</p>
-        <p>Humidity: <span id="humidity"></span>%</p>
-    </div>
+<!-- Water -->
+<div class="water">
+    <div class="wave"></div>
+    <div class="wave" style="bottom: 30%; animation-duration: 6s;"></div>
+    <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" class="ship" style="animation-duration: 15s;">
+    <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" class="ship" style="bottom: 20%; animation-duration: 20s; animation-delay: 5s;">
+</div>
+
+<!-- Weather Info -->
+<div id="weather">
+    <h2 id="cityName"></h2>
+    <img id="weatherIcon" src="" alt="Weather Icon">
+    <p id="description"></p>
+    <p>Temperature: <span id="temp"></span>°C</p>
+    <p>Humidity: <span id="humidity"></span>%</p>
 </div>
 
 <script>
 async function getWeather() {
     const city = document.getElementById('cityInput').value;
     if (!city) {
-        alert(" Enter a city name!");
+        alert("Please enter a city name!");
         return;
     }
 
