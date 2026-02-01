@@ -1,264 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Weather Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather App</title>
 <style>
-body, html {
-  margin: 0;
-  height: 100%;
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-}
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #fff;
+        text-align: center;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
 
-/* Top dashboard container */
-.dashboard {
-  display: flex;
-  height: 300px;
-}
+    /* Top half: strictly blue to orange */
+    .top-half {
+        background: linear-gradient(to bottom, #2980b9, #f39c12); /* blue to orange */
+        height: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
 
-/* Left panel - light green */
-.left-panel {
-  width: 200px;
-  background: #90EE90;
-  padding: 10px;
-  box-sizing: border-box;
-}
-.left-panel h2 {
-  text-align: center;
-}
-.left-panel ul {
-  list-style: none;
-  padding: 0;
-}
-.left-panel li {
-  padding: 8px;
-  margin-bottom: 4px;
-  cursor: pointer;
-  background: #66c266;
-  border-radius: 4px;
-  text-align: center;
-}
-.left-panel li:hover {
-  background: #4caf50;
-  color: white;
-}
+    h1 {
+        margin: 0;
+        font-size: 2.5em;
+    }
 
-/* Middle panel - light blue */
-.middle-panel {
-  flex: 1;
-  background: #ADD8E6;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  box-sizing: border-box;
-  text-align: center;
-}
-.middle-panel input {
-  padding: 10px;
-  margin: 5px;
-  width: 70%;
-  border-radius: 5px;
-  border: 1px solid #888;
-  font-size: 16px;
-}
-.middle-panel button {
-  border: none;
-  background: none;
-  cursor: pointer;
-  margin-top: 10px;
-}
-.middle-panel p {
-  margin-bottom: 15px;
-  font-weight: bold;
-  font-size: 16px;
-}
+    .input-area {
+        margin-top: 20px;
+    }
 
-/* Right panel - purple */
-.right-panel {
-  width: 200px;
-  background: #800080;
-  color: white;
-  padding: 10px;
-  box-sizing: border-box;
-}
-.right-panel h2 {
-  text-align: center;
-}
-.right-panel ul {
-  list-style: none;
-  padding: 0;
-}
-.right-panel li {
-  padding: 8px;
-  margin-bottom: 4px;
-  cursor: pointer;
-  background: #9932CC;
-  border-radius: 4px;
-  text-align: center;
-}
-.right-panel li:hover {
-  background: #BA55D3;
-}
+    input {
+        padding: 10px;
+        border-radius: 5px;
+        border: none;
+        width: 200px;
+        margin-right: 10px;
+    }
 
-/* Weather output container with icon background */
-.weather-output {
-  flex: 1;
-  position: relative;
-  background: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  font-size: 20px;
-  text-align: center;
-}
+    button {
+        padding: 10px 15px;
+        border-radius: 5px;
+        border: none;
+        background-color: #fff;
+        color: #2980b9;
+        cursor: pointer;
+        font-weight: bold;
+    }
 
-/* Weather icon as background */
-.weather-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 0.2; /* make it subtle */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.col_wxicons2 {
-  width: 150px;
-  height: 150px;
-}
-.wxico35 {
-  font-size: 120px;
-}
+    /* Bottom half: weather info */
+    .bottom-half {
+        background: #34495e; /* dark gray/blue */
+        height: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #weather img {
+        width: 80px;
+    }
+
+    #weather {
+        text-align: center;
+    }
 </style>
 </head>
-
 <body>
-
-<div class="dashboard">
-  <!-- Left panel -->
-  <div class="left-panel">
-    <h2>Cities</h2>
-    <ul id="cityList">
-      <li onclick="selectLocation('Melbourne')">Melbourne</li>
-      <li onclick="selectLocation('Sydney')">Sydney</li>
-      <li onclick="selectLocation('Tokyo')">Tokyo</li>
-      <li onclick="selectLocation('New York')">New York</li>
-      <li onclick="selectLocation('Hyderabad')">Hyderabad</li>
-      <li onclick="selectLocation('Ballarat')">Ballarat</li>
-      <li onclick="selectLocation('Hong Kong')">Hong Kong</li>
-    </ul>
-  </div>
-
-  <!-- Middle panel -->
-  <div class="middle-panel">
-    <p>You can click what's on the list. The search bars are if you can't find the country you are looking for.</p>
-    <input id="countryInput" placeholder="Type Country">
-    <input id="cityInput" placeholder="Type City or Suburb">
-    <button onclick="sendButtonClicked()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" aria-hidden="true" class="icon">
-        <use href="/cdn/assets/sprites-core-c9exbsc1.svg#01bab7" fill="currentColor"></use>
-      </svg>
-    </button>
-  </div>
-
-  <!-- Right panel -->
-  <div class="right-panel">
-    <h2>Countries</h2>
-    <ul id="countryList">
-      <li onclick="selectLocation('Australia')">Australia</li>
-      <li onclick="selectLocation('India')">India</li>
-      <li onclick="selectLocation('Dubai')">Dubai</li>
-      <li onclick="selectLocation('Malaysia')">Malaysia</li>
-      <li onclick="selectLocation('Thailand')">Thailand</li>
-      <li onclick="selectLocation('Singapore')">Singapore</li>
-      <li onclick="selectLocation('Vietnam')">Vietnam</li>
-      <li onclick="selectLocation('Afghanistan')">Afghanistan</li>
-      <li onclick="selectLocation('Bangladesh')">Bangladesh</li>
-      <li onclick="selectLocation('Africa')">Africa</li>
-    </ul>
-  </div>
+<div class="top-half">
+    <h1>Weather App</h1>
+    <div class="input-area">
+        <input type="text" id="cityInput" placeholder="Enter city name">
+        <button onclick="getWeather()">Get Weather</button>
+    </div>
 </div>
 
-<!-- Weather output with icon background -->
-<div class="weather-output" id="out">
-  <!-- Background icon -->
-  <div class="weather-background">
-    <div class="col-4 col-m-4 col_wxicons2 weather_icon weather_icon_sample">
-      <span class="col-6 col-m-6 wxico35">☀️</span>
+<div class="bottom-half">
+    <div id="weather" style="display:none;">
+        <h2 id="cityName"></h2>
+        <img id="weatherIcon" src="" alt="Weather Icon">
+        <p id="description"></p>
+        <p>Temperature: <span id="temp"></span>°C</p>
+        <p>Humidity: <span id="humidity"></span>%</p>
     </div>
-  </div>
-  <div id="weatherText">Click a city or country to see the weather here.</div>
 </div>
 
 <script>
-let intervalId;
-
-function calculateWindChill(tempC, windKmh){
-  if(tempC > 10 || windKmh < 4.8) return tempC.toFixed(1);
-  const v = windKmh, t = tempC;
-  return (13.12 + 0.6215*t - 11.37*Math.pow(v,0.16) + 0.3965*t*Math.pow(v,0.16)).toFixed(1);
-}
-
-async function selectLocation(name){
-  if(intervalId) clearInterval(intervalId);
-
-  try{
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1`);
-    const geo = await geoRes.json();
-    if(!geo.results){document.getElementById("weatherText").textContent="Location not found"; return;}
-    const {latitude, longitude, timezone} = geo.results[0];
-
-    async function updateWeather(){
-      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-      const w = await weatherRes.json();
-      const temp = w.current_weather.temperature;
-      const wind = w.current_weather.windspeed;
-      const chill = calculateWindChill(temp, wind);
-      const now = new Date().toLocaleString("en-AU",{timeZone: timezone,hour12:true,hour:"2-digit",minute:"2-digit",second:"2-digit"});
-
-      // Update background icon based on weather code
-      const code = w.current_weather.weathercode;
-      let icon = "☀️"; // default sunny
-      if(code >= 51 && code <= 67) icon = "🌧️";
-      else if(code >= 71 && code <= 77) icon = "❄️";
-      else if(code >= 80 && code <= 82) icon = "🌦️";
-      else if(code >= 95 && code <= 99) icon = "⛈️";
-      else if(code >= 45 && code <= 48) icon = "🌫️";
-      else if(code == 3) icon = "☁️";
-      else if(code == 2) icon = "⛅";
-
-      document.querySelector(".wxico35").textContent = icon;
-      document.getElementById("weatherText").innerHTML =
-        `<b>${name}</b><br>`+
-        `Temp: ${temp} °C<br>`+
-        `Wind: ${wind} km/h<br>`+
-        `Wind Chill: ${chill} °C<br>`+
-        `Local Time: ${now}`;
+async function getWeather() {
+    const city = document.getElementById('cityInput').value;
+    if (!city) {
+        alert(" Enter a city name!");
+        return;
     }
 
-    updateWeather();
-    intervalId = setInterval(updateWeather,1000);
+    const apiKey = 'YOUR_API_KEY_HERE'; // Replace with your OpenWeatherMap API key
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
-  }catch{
-    document.getElementById("weatherText").textContent="Error fetching location";
-  }
-}
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("City not found");
+        const data = await response.json();
 
-// Send button functionality
-function sendButtonClicked(){
-  const country = document.getElementById("countryInput").value;
-  const city = document.getElementById("cityInput").value;
-  if(city) selectLocation(city);
-  else if(country) selectLocation(country);
+        document.getElementById('cityName').innerText = data.name + ", " + data.sys.country;
+        document.getElementById('weatherIcon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+        document.getElementById('description').innerText = data.weather[0].description;
+        document.getElementById('temp').innerText = Math.round(data.main.temp);
+        document.getElementById('humidity').innerText = data.main.humidity;
+        document.getElementById('weather').style.display = 'block';
+    } catch (error) {
+        alert("City not found or error fetching data!");
+        document.getElementById('weather').style.display = 'none';
+    }
 }
 </script>
-
 </body>
 </html>
