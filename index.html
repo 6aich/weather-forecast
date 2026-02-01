@@ -2,11 +2,11 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Real Weather</title>
+<title>Weather</title>
 <style>
 body{
   margin:0;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   background:#1e3c72;
   color:white;
   text-align:center;
@@ -32,40 +32,44 @@ input,button{
 <h1>🌦️ Weather</h1>
 
 <div class="box">
-  <input id="city" placeholder="City name">
+  <input id="city" placeholder="City (e.g. Melbourne)">
   <button onclick="getWeather()">Go</button>
   <div id="out"></div>
 </div>
 
 <script>
-const apiKey = "PUT_YOUR_REAL_KEY_HERE";
+const API_KEY = "REPLACE_WITH_YOUR_API_KEY";
 
-function getWeather(){
+async function getWeather(){
   const city = document.getElementById("city").value.trim();
   const out = document.getElementById("out");
 
   if(!city){
-    out.textContent = "Enter a city";
+    out.textContent = "";
     return;
   }
 
-  fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${apiKey}`)
-    .then(res => res.json())
-    .then(data => {
-      if(data.cod !== 200){
-        out.textContent = data.message;
-        return;
-      }
+  try{
+    const res = await fetch(
+      "https://api.openweathermap.org/data/2.5/weather?q=" +
+      encodeURIComponent(city) +
+      "&units=metric&appid=" +
+      API_KEY
+    );
 
+    const data = await res.json();
+
+    if(res.ok){
       out.innerHTML =
-        `<b>${data.name}</b><br>
-         ${data.main.temp} °C<br>
-         ${data.weather[0].description}`;
-    })
-    .catch(err => {
-      out.textContent = "Network error";
-      console.error(err);
-    });
+        data.name + "<br>" +
+        data.main.temp + " °C<br>" +
+        data.weather[0].description;
+    }else{
+      out.textContent = data.message;
+    }
+  }catch(e){
+    out.textContent = "error";
+  }
 }
 </script>
 
