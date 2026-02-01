@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Real Weather</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#1e3c72;
+  color:white;
+  text-align:center;
+}
+.box{
+  margin-top:100px;
+  background:rgba(0,0,0,0.4);
+  padding:20px;
+  border-radius:15px;
+  display:inline-block;
+}
+input,button{
+  padding:10px;
+  font-size:16px;
+  border-radius:8px;
+  border:none;
+}
+#out{margin-top:15px;}
+</style>
+</head>
+
+<body>
+<h1>🌦️ Weather</h1>
+
+<div class="box">
+  <input id="city" placeholder="City name">
+  <button onclick="weather()">Go</button>
+  <div id="out"></div>
+</div>
+
+<script>
+const key = "YOUR_API_KEY_HERE";
+
+function weather(){
+  let c = document.getElementById("city").value;
+  fetch(`https://api.openweathermap.org/data/2.5/weather?q=${c}&units=metric&appid=${key}`)
+  .then(r=>r.json())
+  .then(d=>{
+    document.getElementById("out").innerHTML =
+      d.cod!=200 ? "City not found" :
+      `${d.name}<br>${d.main.temp}°C<br>${d.weather[0].description}`;
+  });
+}
+</script>
+</body>
+</html>
