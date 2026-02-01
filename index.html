@@ -2,8 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>🌦️ Weather</title>
-
+<title>Live Weather & Time</title>
 <style>
 body{
   margin:0;
@@ -14,64 +13,85 @@ body{
 }
 .box{
   margin-top:100px;
-  background:rgba(0,0,0,0.4);
-  padding:20px;
+  background:rgba(0,0,0,0.5);
+  padding:25px;
   border-radius:15px;
   display:inline-block;
 }
-input,button{
-  padding:10px;
-  font-size:16px;
-  border-radius:8px;
-  border:none;
-}
-#out{margin-top:15px;}
+#out{margin-top:20px; font-size:18px;}
 </style>
 </head>
 
 <body>
-
-<h1>🌦️ Weather</h1>
+<h1>🌦️ Live Weather, Wind Chill & Time</h1>
 
 <div class="box">
-  <input id="city" placeholder="City (Melbourne)">
-  <button onclick="getWeather()">Go</button>
+  <button onclick="startLive()">Start Live Weather</button>
   <div id="out"></div>
 </div>
 
 <script>
-async function getWeather(){
-  const city = document.getElementById("city").value.trim();
-  const out = document.getElementById("out");
-  if(!city) return;
+function calculateWindChill(tempC, windKmh){
+  if(tempC > 10 || windKmh < 4.8) return tempC.toFixed(1);
+  const v = windKmh;
+  const t = tempC;
+  return (13.12 + 0.6215*t - 11.37*Math.pow(v,0.16) + 0.3965*t*Math.pow(v,0.16)).toFixed(1);
+}
 
+let intervalId;
+
+async function updateLive(lat, lon, timezone){
   try{
-    const geo = await fetch(
-      "https://geocoding-api.open-meteo.com/v1/search?name=" +
-      encodeURIComponent(city) + "&count=1"
+    const weatherRes = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
     );
-    const geoData = await geo.json();
+    const weather = await weatherRes.json();
+    const temp = weather.current_weather.temperature;
+    const wind = weather.current_weather.windspeed;
+    const chill = calculateWindChill(temp, wind);
 
-    if(!geoData.results){
-      out.textContent = "City not found";
-      return;
-    }
+    const now = new Date().toLocaleString("en-AU", {
+      timeZone: timezone,
+      hour12: true,
+      hour:"2-digit",
+      minute:"2-digit",
+      second:"2-digit"
+    });
 
-    const { latitude, longitude, name } = geoData.results[0];
+    document.getElementById("out").innerHTML =
+      `Temp: ${temp} °C<br>` +
+      `Wind: ${wind} km/h<br>` +
+      `Wind Chill: ${chill} °C<br>` +
+      `Local Time: ${now}`;
+  } catch {
+    document.getElementById("out").textContent="Error fetching live data";
+  }
+}
 
-    const weather = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
+function startLive(){
+  if(!navigator.geolocation){
+    document.getElementById("out").textContent="Location not supported";
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    // get timezone name
+    const tzRes = await fetch(
+      "https://api.open-meteo.com/v1/forecast?latitude=" +
+      lat + "&longitude=" + lon + "&hourly=temperature_2m"
     );
-    const w = await weather.json();
+    const tzData = await tzRes.json();
+    const timezone = tzData.timezone;
 
-    out.innerHTML =
-      name + "<br>" +
-      w.current_weather.temperature + " °C<br>" +
-      "Wind " + w.current_weather.windspeed + " km/h";
-  }
-  catch{
-    out.textContent = "Error";
-  }
+    if(intervalId) clearInterval(intervalId);
+    updateLive(lat, lon, timezone);
+    intervalId = setInterval(() => updateLive(lat, lon, timezone), 1000);
+
+  }, () => {
+    document.getElementById("out").textContent="Permission denied";
+  });
 }
 </script>
 
