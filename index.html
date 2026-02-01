@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Animated Weather Sunset</title>
+<title>Sunset Weather with Suggestions</title>
 <style>
 body {
     margin: 0;
@@ -30,11 +30,10 @@ body {
     background: yellow;
     border-radius: 50%;
     box-shadow: 0 0 50px 20px rgba(255, 223, 0, 0.5);
-    animation: moveSun 30s linear infinite alternate; /* slower */
-    z-index: 2;
+    animation: moveSun 30s linear forwards;
 }
 
-/* Sunlight glow */
+/* Sun glow on water */
 .sun-glow {
     position: absolute;
     top: 50%;
@@ -53,7 +52,7 @@ body {
     overflow: hidden;
 }
 
-/* Waves */
+/* Wave */
 .wave {
     position: absolute;
     width: 200%;
@@ -62,23 +61,22 @@ body {
     border-radius: 50%;
     bottom: 40%;
     left: -50%;
-    animation: waveMove 4s linear infinite;
+    animation: waveMove 6s linear infinite;
 }
 
-/* Ships */
+/* Ship */
 .ship {
     position: absolute;
     bottom: 10%;
     width: 80px;
     height: auto;
-    animation: shipMove 15s linear infinite;
+    animation: shipMove 30s linear infinite;
 }
 
 /* Animations */
 @keyframes moveSun {
     0% { top: -50px; }
-    50% { top: 120%; }
-    100% { top: -50px; }
+    100% { top: 120%; }
 }
 
 @keyframes waveMove {
@@ -98,6 +96,9 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 input {
@@ -108,6 +109,7 @@ input {
 }
 
 button {
+    margin-top: 5px;
     padding: 10px 15px;
     border-radius: 5px;
     border: none;
@@ -123,13 +125,12 @@ button {
     background: #fff;
     color: #000;
     width: 200px;
-    max-height: 120px;
+    max-height: 150px;
     overflow-y: auto;
     border-radius: 5px;
     top: 40px;
     left: 0;
     z-index: 20;
-    display: none;
 }
 
 .suggestions div {
@@ -163,16 +164,15 @@ button {
     <div class="sun-glow"></div>
 
     <div class="weather-input">
-        <input type="text" id="cityInput" placeholder="Enter city name" oninput="showSuggestions()">
+        <input type="text" id="cityInput" placeholder="Type something..." oninput="showSuggestions()">
         <div class="suggestions" id="suggestions"></div>
+        <button onclick="getWeather()">Enter</button> <!-- manual fetch -->
     </div>
 </div>
 
 <div class="water">
     <div class="wave"></div>
-    <div class="wave" style="bottom: 30%; animation-duration: 6s;"></div>
-    <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" class="ship" style="animation-duration: 15s;">
-    <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" class="ship" style="bottom: 20%; animation-duration: 20s; animation-delay: 5s;">
+    <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" class="ship">
 </div>
 
 <div id="weather">
@@ -184,35 +184,37 @@ button {
 </div>
 
 <script>
-const cities = ["London","Paris","New York","Tokyo","Sydney","Mumbai","Dubai","Singapore","Los Angeles","Melbourne"];
+const suggestionsList = [
+    "London","Paris","New York","Tokyo","Sydney","Mumbai","Dubai","Singapore","Los Angeles","Melbourne",
+    "Gemini","Grok","ChatGPT","AI Art","Weather App","Roblox","Coding","Mars","SpaceX","Crypto"
+];
 
 function showSuggestions() {
     const input = document.getElementById('cityInput').value.toLowerCase();
     const suggestions = document.getElementById('suggestions');
     suggestions.innerHTML = '';
-    if(input === '') {
-        suggestions.style.display = 'none';
-        return;
-    }
-    const filtered = cities.filter(city => city.toLowerCase().startsWith(input));
-    filtered.forEach(city => {
-        const div = document.createElement('div');
-        div.innerText = city;
-        div.onclick = () => {
-            document.getElementById('cityInput').value = city;
-            suggestions.style.display = 'none';
-            getWeather(); // auto-fetch when clicked
-        };
-        suggestions.appendChild(div);
-    });
+    const filtered = suggestionsList.filter(item => item.toLowerCase().includes(input));
+    filtered.forEach(item => addSuggestion(item));
     suggestions.style.display = filtered.length > 0 ? 'block' : 'none';
 }
 
-async function getWeather() {
-    const city = document.getElementById('cityInput').value;
+function addSuggestion(item) {
+    const suggestions = document.getElementById('suggestions');
+    const div = document.createElement('div');
+    div.innerText = item;
+    div.onclick = () => {
+        document.getElementById('cityInput').value = item;
+        suggestions.style.display = 'none';
+        getWeather(item); // auto-fetch
+    };
+    suggestions.appendChild(div);
+}
+
+async function getWeather(city) {
+    city = city || document.getElementById('cityInput').value;
     if (!city) return;
 
-    const apiKey = 'YOUR_API_KEY_HERE'; // Replace with your OpenWeatherMap API key
+    const apiKey = 'YOUR_API_KEY_HERE'; // Replace with real OpenWeatherMap API key
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
     try {
@@ -227,10 +229,18 @@ async function getWeather() {
         document.getElementById('humidity').innerText = data.main.humidity;
         document.getElementById('weather').style.display = 'block';
     } catch (error) {
-        document.getElementById('weather').innerHTML = "<p>City not found!</p>";
+        // fallback for anything typed
+        document.getElementById('cityName').innerText = city;
+        document.getElementById('weatherIcon').src = '';
+        document.getElementById('description').innerText = 'Weather data not available';
+        document.getElementById('temp').innerText = '-';
+        document.getElementById('humidity').innerText = '-';
         document.getElementById('weather').style.display = 'block';
     }
 }
+
+// show initial suggestions even on empty input
+showSuggestions();
 </script>
 </body>
 </html>
