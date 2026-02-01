@@ -1,51 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sunset Weather & Time</title>
-<style>
-body {margin:0; font-family:Arial, sans-serif; overflow:hidden; background:#222;}
-.sky {position:relative; height:50vh; background:linear-gradient(to bottom,#2980b9,#f39c12); overflow:hidden;}
-.sun {position:absolute; top:-50px; left:50%; transform:translateX(-50%); width:80px; height:80px; background:yellow; border-radius:50%; box-shadow:0 0 50px 20px rgba(255,223,0,0.5); animation:moveSun 30s linear forwards;}
-.sun-glow {position:absolute; top:50%; left:50%; width:100%; height:50%; background:radial-gradient(ellipse at center, rgba(255,223,0,0.2) 0%, transparent 80%); pointer-events:none;}
-.water {position:relative; height:50vh; background:#34495e; overflow:hidden;}
-.wave {position:absolute; width:200%; height:20px; background:rgba(255,255,255,0.2); border-radius:50%; bottom:40%; left:-50%; animation:waveMove 6s linear infinite;}
-.ship {position:absolute; bottom:10%; width:80px; height:auto; animation:shipMove 30s linear infinite;}
-@keyframes moveSun {0% {top:-50px;} 100% {top:120%;}}
-@keyframes waveMove {0%{transform:translateX(0);}100%{transform:translateX(50%);}}
-@keyframes shipMove {0%{left:-100px;}100%{left:110%;}}
-.weather-input {position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; display:flex; flex-direction:column; align-items:center;}
-input {padding:10px; border-radius:5px; border:none; width:220px;}
-button {margin-top:5px; padding:10px 15px; border-radius:5px; border:none; background:#fff; color:#2980b9; font-weight:bold; cursor:pointer;}
-.suggestions {position:absolute; background:#fff; color:#000; width:220px; max-height:150px; overflow-y:auto; border-radius:5px; top:40px; left:0; z-index:20;}
-.suggestions div {padding:5px 10px; cursor:pointer;}
-.suggestions div:hover {background:#ddd;}
-#weather {position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.4); padding:10px 20px; border-radius:10px; color:#fff; display:none; text-align:center;}
-#weather img {width:50px; height:50px;}
-</style>
-</head>
 <body>
-
-<div class="sky">
-  <div class="sun"></div>
-  <div class="sun-glow"></div>
-
-  <div class="weather-input">
-    <input type="text" id="cityInput" placeholder="Type city or AI term..." oninput="showSuggestions()">
-    <div class="suggestions" id="suggestions"></div>
-    <button onclick="getWeather()">Enter</button>
+<div style="position:relative; height:50vh; background:linear-gradient(to bottom,#2980b9,#f39c12); overflow:hidden;">
+  <div id="sun" style="position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:80px; height:80px; background:yellow; border-radius:50%; box-shadow:0 0 50px 20px rgba(255,223,0,0.5);"></div>
+  
+  <div style="position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; display:flex; flex-direction:column; align-items:center;">
+    <input id="cityInput" placeholder="Type city or AI term..." oninput="showSuggestions()" style="padding:10px; border-radius:5px; border:none; width:220px;">
+    <div id="suggestions" style="position:absolute; background:#fff; color:#000; width:220px; max-height:150px; overflow-y:auto; border-radius:5px; top:40px; left:0; z-index:20;"></div>
+    <button onclick="getWeather()" style="margin-top:5px; padding:10px 15px; border-radius:5px; border:none; background:#fff; color:#2980b9; font-weight:bold; cursor:pointer;">Enter</button>
   </div>
 </div>
 
-<div class="water">
-  <div class="wave"></div>
-  <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" class="ship">
+<div style="position:relative; height:50vh; background:#34495e; overflow:hidden;">
+  <div style="position:absolute; width:200%; height:20px; background:rgba(255,255,255,0.2); border-radius:50%; bottom:40%; left:-50%; animation:waveMove 6s linear infinite;"></div>
+  <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" id="ship" style="position:absolute; bottom:10%; width:80px; height:auto;">
 </div>
 
-<div id="weather">
+<div id="weather" style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.4); padding:10px 20px; border-radius:10px; color:#fff; display:none; text-align:center;">
   <h2 id="cityName"></h2>
-  <img id="weatherIcon" src="" alt="Weather Icon">
+  <img id="weatherIcon" src="" alt="Weather Icon" style="width:50px;height:50px;">
   <p id="description"></p>
   <p>Temperature: <span id="temp"></span>°C</p>
   <p>Humidity: <span id="humidity"></span>%</p>
@@ -53,22 +24,68 @@ button {margin-top:5px; padding:10px 15px; border-radius:5px; border:none; backg
 </div>
 
 <script>
-const suggestionsList = ["London","Paris","New York","Tokyo","Sydney","Mumbai","Dubai","Singapore","Los Angeles","Melbourne","Gemini","Grok","ChatGPT","AI Art","Weather App","Roblox","Coding","Mars","SpaceX","Crypto"];
-
-function showSuggestions() {
-  const input = document.getElementById('cityInput').value.toLowerCase();
-  const suggestions = document.getElementById('suggestions');
-  suggestions.innerHTML = '';
-  const filtered = suggestionsList.filter(item=>item.toLowerCase().includes(input));
-  filtered.forEach(item=>addSuggestion(item));
-  suggestions.style.display = filtered.length>0?'block':'none';
+// --- Sun animation ---
+const sun = document.getElementById('sun');
+const sunDuration = 30000; // 30 seconds
+function animateSun() {
+  let start = null;
+  const topStart = -80;
+  const topEnd = window.innerHeight;
+  
+  function step(timestamp) {
+    if(!start) start=timestamp;
+    let progress = timestamp - start;
+    let percent = progress/sunDuration;
+    if(percent>1) percent=1;
+    sun.style.top = topStart + (topEnd-topStart)*percent + 'px';
+    if(percent<1) requestAnimationFrame(step);
+    else {
+      sun.style.top = topStart + 'px'; // reset top
+      requestAnimationFrame(animateSun);
+    }
+  }
+  requestAnimationFrame(step);
 }
+animateSun();
 
+// --- Ship animation ---
+const ship = document.getElementById('ship');
+const shipDuration = 30000;
+function animateShip(){
+  let start=null;
+  const leftStart=-100;
+  const leftEnd=window.innerWidth+100;
+  function step(timestamp){
+    if(!start) start=timestamp;
+    let progress = timestamp - start;
+    let percent = progress/shipDuration;
+    if(percent>1) percent=1;
+    ship.style.left = leftStart + (leftEnd-leftStart)*percent + 'px';
+    if(percent<1) requestAnimationFrame(step);
+    else {
+      ship.style.left = leftStart+'px';
+      requestAnimationFrame(animateShip);
+    }
+  }
+  requestAnimationFrame(step);
+}
+animateShip();
+
+// --- Suggestions ---
+const suggestionsList = ["London","Paris","New York","Tokyo","Sydney","Mumbai","Dubai","Singapore","Los Angeles","Melbourne","Gemini","Grok","ChatGPT","AI Art","Weather App","Roblox","Coding","Mars","SpaceX","Crypto"];
+function showSuggestions(){
+  const input=document.getElementById('cityInput').value.toLowerCase();
+  const suggestions=document.getElementById('suggestions');
+  suggestions.innerHTML='';
+  const filtered = suggestionsList.filter(item=>item.toLowerCase().includes(input));
+  filtered.forEach(addSuggestion);
+  suggestions.style.display=filtered.length>0?'block':'none';
+}
 function addSuggestion(item){
-  const suggestions = document.getElementById('suggestions');
-  const div = document.createElement('div');
-  div.innerText = item;
-  div.onclick = ()=>{
+  const suggestions=document.getElementById('suggestions');
+  const div=document.createElement('div');
+  div.innerText=item;
+  div.onclick=()=>{
     document.getElementById('cityInput').value=item;
     suggestions.style.display='none';
     getWeather(item);
@@ -76,32 +93,43 @@ function addSuggestion(item){
   suggestions.appendChild(div);
 }
 
-// --- Fetch real weather & time ---
+// --- Waves animation ---
+const wave = document.querySelector('div[style*="rgba(255,255,255,0.2)"]');
+function animateWave(){
+  let start=null;
+  function step(timestamp){
+    if(!start) start=timestamp;
+    let percent=((timestamp-start)/6000)%1;
+    wave.style.transform='translateX(' + (percent*50) + '%)';
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+animateWave();
+
+// --- Real weather & time ---
 async function getWeather(city){
   city = city || document.getElementById('cityInput').value;
   if(!city) return;
-  
   try{
-    // --- Fetch weather from wttr.in ---
     const weatherResp = await fetch(`https://wttr.in/${city}?format=j1`);
     const weatherData = await weatherResp.json();
     const current = weatherData.current_condition[0];
-    
+
     document.getElementById('cityName').innerText = city;
     document.getElementById('weatherIcon').src = '';
     document.getElementById('description').innerText = current.weatherDesc[0].value;
     document.getElementById('temp').innerText = current.temp_C;
     document.getElementById('humidity').innerText = current.humidity;
-    
-    // --- Get time using worldtimeapi.org ---
-    const timezonesResp = await fetch(`https://worldtimeapi.org/api/timezone`);
+
+    const timezonesResp = await fetch('https://worldtimeapi.org/api/timezone');
     const timezones = await timezonesResp.json();
     let tz = timezones.find(tz=>tz.toLowerCase().includes(city.toLowerCase())) || 'Etc/UTC';
     const timeResp = await fetch(`https://worldtimeapi.org/api/timezone/${tz}`);
     const timeData = await timeResp.json();
     const datetime = new Date(timeData.datetime);
     document.getElementById('time').innerText = datetime.toLocaleTimeString();
-    
+
     document.getElementById('weather').style.display='block';
   }catch(err){
     document.getElementById('cityName').innerText = city;
@@ -113,8 +141,7 @@ async function getWeather(city){
   }
 }
 
-// Show initial suggestions
+// Show suggestions on load
 showSuggestions();
 </script>
 </body>
-</html>
