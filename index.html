@@ -3,243 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sunset Weather with Suggestions</title>
+<title>Sunset Weather & Time</title>
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-}
-
-/* Sky */
-.sky {
-    position: relative;
-    height: 50vh;
-    background: linear-gradient(to bottom, #2980b9, #f39c12);
-    overflow: hidden;
-}
-
-/* Sun */
-.sun {
-    position: absolute;
-    top: -50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 80px;
-    background: yellow;
-    border-radius: 50%;
-    box-shadow: 0 0 50px 20px rgba(255, 223, 0, 0.5);
-    animation: moveSun 30s linear forwards;
-}
-
-/* Sun glow on water */
-.sun-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 50%;
-    background: radial-gradient(ellipse at center, rgba(255,223,0,0.2) 0%, transparent 80%);
-    pointer-events: none;
-}
-
-/* Water */
-.water {
-    position: relative;
-    height: 50vh;
-    background: #34495e;
-    overflow: hidden;
-}
-
-/* Wave */
-.wave {
-    position: absolute;
-    width: 200%;
-    height: 20px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    bottom: 40%;
-    left: -50%;
-    animation: waveMove 6s linear infinite;
-}
-
-/* Ship */
-.ship {
-    position: absolute;
-    bottom: 10%;
-    width: 80px;
-    height: auto;
-    animation: shipMove 30s linear infinite;
-}
-
-/* Animations */
-@keyframes moveSun {
-    0% { top: -50px; }
-    100% { top: 120%; }
-}
-
-@keyframes waveMove {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(50%); }
-}
-
-@keyframes shipMove {
-    0% { left: -100px; }
-    100% { left: 110%; }
-}
-
-/* Weather input */
-.weather-input {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-input {
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    width: 200px;
-}
-
-button {
-    margin-top: 5px;
-    padding: 10px 15px;
-    border-radius: 5px;
-    border: none;
-    background-color: #fff;
-    color: #2980b9;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* Suggestion list */
-.suggestions {
-    position: absolute;
-    background: #fff;
-    color: #000;
-    width: 200px;
-    max-height: 150px;
-    overflow-y: auto;
-    border-radius: 5px;
-    top: 40px;
-    left: 0;
-    z-index: 20;
-}
-
-.suggestions div {
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-.suggestions div:hover {
-    background: #ddd;
-}
-
-/* Weather display */
-#weather {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.4);
-    padding: 10px 20px;
-    border-radius: 10px;
-    color: #fff;
-    display: none;
-    text-align: center;
-}
+body {margin:0; font-family:Arial, sans-serif; overflow:hidden; background:#222;}
+.sky {position:relative; height:50vh; background:linear-gradient(to bottom,#2980b9,#f39c12); overflow:hidden;}
+.sun {position:absolute; top:-50px; left:50%; transform:translateX(-50%); width:80px; height:80px; background:yellow; border-radius:50%; box-shadow:0 0 50px 20px rgba(255,223,0,0.5); animation:moveSun 30s linear forwards;}
+.sun-glow {position:absolute; top:50%; left:50%; width:100%; height:50%; background:radial-gradient(ellipse at center, rgba(255,223,0,0.2) 0%, transparent 80%); pointer-events:none;}
+.water {position:relative; height:50vh; background:#34495e; overflow:hidden;}
+.wave {position:absolute; width:200%; height:20px; background:rgba(255,255,255,0.2); border-radius:50%; bottom:40%; left:-50%; animation:waveMove 6s linear infinite;}
+.ship {position:absolute; bottom:10%; width:80px; height:auto; animation:shipMove 30s linear infinite;}
+@keyframes moveSun {0% {top:-50px;} 100% {top:120%;}}
+@keyframes waveMove {0%{transform:translateX(0);}100%{transform:translateX(50%);}}
+@keyframes shipMove {0%{left:-100px;}100%{left:110%;}}
+.weather-input {position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; display:flex; flex-direction:column; align-items:center;}
+input {padding:10px; border-radius:5px; border:none; width:220px;}
+button {margin-top:5px; padding:10px 15px; border-radius:5px; border:none; background:#fff; color:#2980b9; font-weight:bold; cursor:pointer;}
+.suggestions {position:absolute; background:#fff; color:#000; width:220px; max-height:150px; overflow-y:auto; border-radius:5px; top:40px; left:0; z-index:20;}
+.suggestions div {padding:5px 10px; cursor:pointer;}
+.suggestions div:hover {background:#ddd;}
+#weather {position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.4); padding:10px 20px; border-radius:10px; color:#fff; display:none; text-align:center;}
+#weather img {width:50px; height:50px;}
 </style>
 </head>
 <body>
 
 <div class="sky">
-    <div class="sun"></div>
-    <div class="sun-glow"></div>
+  <div class="sun"></div>
+  <div class="sun-glow"></div>
 
-    <div class="weather-input">
-        <input type="text" id="cityInput" placeholder="Type something..." oninput="showSuggestions()">
-        <div class="suggestions" id="suggestions"></div>
-        <button onclick="getWeather()">Enter</button> <!-- manual fetch -->
-    </div>
+  <div class="weather-input">
+    <input type="text" id="cityInput" placeholder="Type city or AI term..." oninput="showSuggestions()">
+    <div class="suggestions" id="suggestions"></div>
+    <button onclick="getWeather()">Enter</button>
+  </div>
 </div>
 
 <div class="water">
-    <div class="wave"></div>
-    <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" class="ship">
+  <div class="wave"></div>
+  <img src="https://static.vecteezy.com/system/resources/thumbnails/024/521/101/small/cruise-ship-transparent-background-png.png" class="ship">
 </div>
 
 <div id="weather">
-    <h2 id="cityName"></h2>
-    <img id="weatherIcon" src="" alt="Weather Icon">
-    <p id="description"></p>
-    <p>Temperature: <span id="temp"></span>°C</p>
-    <p>Humidity: <span id="humidity"></span>%</p>
+  <h2 id="cityName"></h2>
+  <img id="weatherIcon" src="" alt="Weather Icon">
+  <p id="description"></p>
+  <p>Temperature: <span id="temp"></span>°C</p>
+  <p>Humidity: <span id="humidity"></span>%</p>
+  <p>Local Time: <span id="time"></span></p>
 </div>
 
 <script>
-const suggestionsList = [
-    "London","Paris","New York","Tokyo","Sydney","Mumbai","Dubai","Singapore","Los Angeles","Melbourne",
-    "Gemini","Grok","ChatGPT","AI Art","Weather App","Roblox","Coding","Mars","SpaceX","Crypto"
-];
+const suggestionsList = ["London","Paris","New York","Tokyo","Sydney","Mumbai","Dubai","Singapore","Los Angeles","Melbourne","Gemini","Grok","ChatGPT","AI Art","Weather App","Roblox","Coding","Mars","SpaceX","Crypto"];
 
 function showSuggestions() {
-    const input = document.getElementById('cityInput').value.toLowerCase();
-    const suggestions = document.getElementById('suggestions');
-    suggestions.innerHTML = '';
-    const filtered = suggestionsList.filter(item => item.toLowerCase().includes(input));
-    filtered.forEach(item => addSuggestion(item));
-    suggestions.style.display = filtered.length > 0 ? 'block' : 'none';
+  const input = document.getElementById('cityInput').value.toLowerCase();
+  const suggestions = document.getElementById('suggestions');
+  suggestions.innerHTML = '';
+  const filtered = suggestionsList.filter(item=>item.toLowerCase().includes(input));
+  filtered.forEach(item=>addSuggestion(item));
+  suggestions.style.display = filtered.length>0?'block':'none';
 }
 
-function addSuggestion(item) {
-    const suggestions = document.getElementById('suggestions');
-    const div = document.createElement('div');
-    div.innerText = item;
-    div.onclick = () => {
-        document.getElementById('cityInput').value = item;
-        suggestions.style.display = 'none';
-        getWeather(item); // auto-fetch
-    };
-    suggestions.appendChild(div);
+function addSuggestion(item){
+  const suggestions = document.getElementById('suggestions');
+  const div = document.createElement('div');
+  div.innerText = item;
+  div.onclick = ()=>{
+    document.getElementById('cityInput').value=item;
+    suggestions.style.display='none';
+    getWeather(item);
+  };
+  suggestions.appendChild(div);
 }
 
-async function getWeather(city) {
-    city = city || document.getElementById('cityInput').value;
-    if (!city) return;
-
-    const apiKey = 'YOUR_API_KEY_HERE'; // Replace with real OpenWeatherMap API key
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("City not found");
-        const data = await response.json();
-
-        document.getElementById('cityName').innerText = data.name + ", " + data.sys.country;
-        document.getElementById('weatherIcon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
-        document.getElementById('description').innerText = data.weather[0].description;
-        document.getElementById('temp').innerText = Math.round(data.main.temp);
-        document.getElementById('humidity').innerText = data.main.humidity;
-        document.getElementById('weather').style.display = 'block';
-    } catch (error) {
-        // fallback for anything typed
-        document.getElementById('cityName').innerText = city;
-        document.getElementById('weatherIcon').src = '';
-        document.getElementById('description').innerText = 'Weather data not available';
-        document.getElementById('temp').innerText = '-';
-        document.getElementById('humidity').innerText = '-';
-        document.getElementById('weather').style.display = 'block';
-    }
+// --- Fetch real weather & time ---
+async function getWeather(city){
+  city = city || document.getElementById('cityInput').value;
+  if(!city) return;
+  
+  try{
+    // --- Fetch weather from wttr.in ---
+    const weatherResp = await fetch(`https://wttr.in/${city}?format=j1`);
+    const weatherData = await weatherResp.json();
+    const current = weatherData.current_condition[0];
+    
+    document.getElementById('cityName').innerText = city;
+    document.getElementById('weatherIcon').src = '';
+    document.getElementById('description').innerText = current.weatherDesc[0].value;
+    document.getElementById('temp').innerText = current.temp_C;
+    document.getElementById('humidity').innerText = current.humidity;
+    
+    // --- Get time using worldtimeapi.org ---
+    const timezonesResp = await fetch(`https://worldtimeapi.org/api/timezone`);
+    const timezones = await timezonesResp.json();
+    let tz = timezones.find(tz=>tz.toLowerCase().includes(city.toLowerCase())) || 'Etc/UTC';
+    const timeResp = await fetch(`https://worldtimeapi.org/api/timezone/${tz}`);
+    const timeData = await timeResp.json();
+    const datetime = new Date(timeData.datetime);
+    document.getElementById('time').innerText = datetime.toLocaleTimeString();
+    
+    document.getElementById('weather').style.display='block';
+  }catch(err){
+    document.getElementById('cityName').innerText = city;
+    document.getElementById('description').innerText='Weather not found';
+    document.getElementById('temp').innerText='-';
+    document.getElementById('humidity').innerText='-';
+    document.getElementById('time').innerText='-';
+    document.getElementById('weather').style.display='block';
+  }
 }
 
-// show initial suggestions even on empty input
+// Show initial suggestions
 showSuggestions();
 </script>
 </body>
