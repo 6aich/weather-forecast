@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Weather Dashboard</title>
+<title>Weather Forecast </title>
 <style>
 body, html {
   margin: 0;
@@ -104,7 +104,7 @@ body, html {
   background: #BA55D3;
 }
 
-/* Weather display under dashboard */
+/* Weather output under dashboard */
 .weather-output {
   flex: 1;
   background: #f0f0f0;
@@ -112,6 +112,19 @@ body, html {
   padding: 20px;
   text-align: center;
   font-size: 20px;
+  position: relative;
+}
+
+/* Weather icon container as background */
+.weather_icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 60px;
+  height: 60px;
+}
+.wxico2 {
+  font-size: 50px;
 }
 </style>
 </head>
@@ -155,68 +168,3 @@ body, html {
       <li onclick="selectLocation('Malaysia')">Malaysia</li>
       <li onclick="selectLocation('Thailand')">Thailand</li>
       <li onclick="selectLocation('Singapore')">Singapore</li>
-      <li onclick="selectLocation('Vietnam')">Vietnam</li>
-      <li onclick="selectLocation('Afghanistan')">Afghanistan</li>
-      <li onclick="selectLocation('Bangladesh')">Bangladesh</li>
-      <li onclick="selectLocation('Africa')">Africa</li>
-    </ul>
-  </div>
-</div>
-
-<!-- Weather output under dashboard -->
-<div class="weather-output" id="out">
-  Click a city or country to see the weather here.
-</div>
-
-<script>
-let intervalId;
-
-function calculateWindChill(tempC, windKmh){
-  if(tempC > 10 || windKmh < 4.8) return tempC.toFixed(1);
-  const v = windKmh, t = tempC;
-  return (13.12 + 0.6215*t - 11.37*Math.pow(v,0.16) + 0.3965*t*Math.pow(v,0.16)).toFixed(1);
-}
-
-async function selectLocation(name){
-  if(intervalId) clearInterval(intervalId);
-
-  try{
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1`);
-    const geo = await geoRes.json();
-    if(!geo.results){document.getElementById("out").textContent="Location not found"; return;}
-    const {latitude, longitude, timezone} = geo.results[0];
-
-    async function updateWeather(){
-      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-      const w = await weatherRes.json();
-      const temp = w.current_weather.temperature;
-      const wind = w.current_weather.windspeed;
-      const chill = calculateWindChill(temp, wind);
-      const now = new Date().toLocaleString("en-AU",{timeZone: timezone,hour12:true,hour:"2-digit",minute:"2-digit",second:"2-digit"});
-      document.getElementById("out").innerHTML =
-        `<b>${name}</b><br>`+
-        `Temp: ${temp} °C<br>`+
-        `Wind: ${wind} km/h<br>`+
-        `Wind Chill: ${chill} °C<br>`+
-        `Local Time: ${now}`;
-    }
-
-    updateWeather();
-    intervalId = setInterval(updateWeather,1000);
-
-  }catch{
-    document.getElementById("out").textContent="Error fetching location";
-  }
-}
-
-// Send button functionality
-function sendButtonClicked(){
-  const country = document.getElementById("countryInput").value;
-  const city = document.getElementById("cityInput").value;
-  if(city) selectLocation(city);
-  else if(country) selectLocation(country);
-}
-</script>
-
-</body>
-</html>
