@@ -2,147 +2,143 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Weather Forecast </title>
+<title>Weather Dashboard</title>
 <style>
-/* Make body and html full height */
-html, body {
-  height: 100%;
+body, html {
   margin: 0;
+  height: 100%;
   font-family: Arial, sans-serif;
-  background: #FFA500; /* fallback for right panel */
-}
-
-/* Flex container for sidebar + main panel */
-body {
   display: flex;
 }
 
-/* Sidebar */
-.sidebar {
+/* Left panel - light green */
+.left-panel {
   width: 200px;
-  background: #2c3e50;
-  color: white;
-  padding: 20px;
+  background: #90EE90; /* light green */
+  padding: 10px;
   box-sizing: border-box;
 }
-.sidebar h2 {
+.left-panel h2 {
   text-align: center;
-  margin-bottom: 20px;
 }
-.sidebar ul {
+.left-panel ul {
   list-style: none;
   padding: 0;
 }
-.sidebar li {
-  padding: 10px;
+.left-panel li {
+  padding: 8px;
+  margin-bottom: 4px;
   cursor: pointer;
-  border-radius: 5px;
-  margin-bottom: 5px;
-  background: #34495e;
+  background: #66c266;
+  border-radius: 4px;
   text-align: center;
-  color: white;
 }
-.sidebar li:hover {
-  background: #1abc9c;
+.left-panel li:hover {
+  background: #4caf50;
+  color: white;
 }
 
-/* Right panel */
-.main {
+/* Middle panel - light blue */
+.middle-panel {
   flex: 1;
-  background: #FFA500; /* orange */
-  color: white;
+  background: #ADD8E6; /* light blue */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 20px;
-  text-align: center;
   padding: 20px;
   box-sizing: border-box;
-  min-height: 100vh;
+  text-align: center;
+}
+.middle-panel input {
+  padding: 10px;
+  margin: 5px;
+  width: 60%;
+  border-radius: 5px;
+  border: 1px solid #888;
+  font-size: 16px;
+}
+.middle-panel p {
+  margin-bottom: 15px;
+  font-weight: bold;
+  font-size: 16px;
 }
 
-/* Weather header with emoji */
-.weather-header {
-  display: flex;
-  align-items: center;
-  font-size: 28px;
-  margin-bottom: 20px;
+/* Right panel - purple */
+.right-panel {
+  width: 200px;
+  background: #800080; /* purple */
+  color: white;
+  padding: 10px;
+  box-sizing: border-box;
 }
-.weather-header span.wxico2 {
-  font-size: 40px;
-  margin-right: 15px;
+.right-panel h2 {
+  text-align: center;
+}
+.right-panel ul {
+  list-style: none;
+  padding: 0;
+}
+.right-panel li {
+  padding: 8px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  background: #9932CC;
+  border-radius: 4px;
+  text-align: center;
+}
+.right-panel li:hover {
+  background: #BA55D3;
+}
+
+/* Shared styles */
+ul li {
+  user-select: none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
+<!-- Left panel -->
+<div class="left-panel">
   <h2>Cities</h2>
   <ul id="cityList">
-    <li onclick="selectCity('Melbourne')">Melbourne</li>
-    <li onclick="selectCity('Sydney')">Sydney</li>
-    <li onclick="selectCity('Tokyo')">Tokyo</li>
-    <li onclick="selectCity('London')">London</li>
-    <li onclick="selectCity('New York')">New York</li>
+    <li>New York</li>
+    <li>London</li>
+    <li>Melbourne</li>
+    <li>Sydney</li>
+    <li>Hydrabad</li>
+    <li>Maboonagur</li>
+    <li>Tokyo</li>
+    <li>Hongkong</li>
+    <li>Balarat</li>
   </ul>
 </div>
 
-<div class="main">
-  <div class="weather-header">
-    <span class="col-6 col-m-6 wxico2">☀️</span>
-    <div>Weather Forecast</div>
-  </div>
-  <div id="out"></div>
+<!-- Middle panel -->
+<div class="middle-panel">
+  <p>You can click what's on the list. The search bars are if you can't find the country you are looking for.</p>
+  <input id="countryInput" placeholder="Type Country">
+  <input id="cityInput" placeholder="Type City or Suburb">
 </div>
 
-<script>
-let intervalId;
-let currentCity = "Melbourne";
-
-function calculateWindChill(tempC, windKmh){
-  if(tempC > 10 || windKmh < 4.8) return tempC.toFixed(1);
-  const v = windKmh, t = tempC;
-  return (13.12 + 0.6215*t - 11.37*Math.pow(v,0.16) + 0.3965*t*Math.pow(v,0.16)).toFixed(1);
-}
-
-async function updateWeather(cityName){
-  try{
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1`);
-    const geo = await geoRes.json();
-    if(!geo.results){document.getElementById("out").textContent="City not found"; return;}
-    const {latitude, longitude, name, timezone} = geo.results[0];
-
-    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-    const w = await weatherRes.json();
-    const temp = w.current_weather.temperature;
-    const wind = w.current_weather.windspeed;
-    const chill = calculateWindChill(temp, wind);
-
-    const now = new Date().toLocaleString("en-AU",{timeZone: timezone,hour12:true,hour:"2-digit",minute:"2-digit",second:"2-digit"});
-
-    document.getElementById("out").innerHTML =
-      `<b>${name}</b><br>`+
-      `Temp: ${temp} °C<br>`+
-      `Wind: ${wind} km/h<br>`+
-      `Wind Chill: ${chill} °C<br>`+
-      `Local Time: ${now}`;
-  }catch{
-    document.getElementById("out").textContent="Error fetching data";
-  }
-}
-
-function selectCity(cityName){
-  currentCity = cityName;
-  if(intervalId) clearInterval(intervalId);
-  updateWeather(currentCity);
-  intervalId = setInterval(()=>updateWeather(currentCity),1000);
-}
-
-// Start with default city
-selectCity(currentCity);
-</script>
+<!-- Right panel -->
+<div class="right-panel">
+  <h2>Countries</h2>
+  <ul id="countryList">
+    <li>Australia</li>
+    <li>Indai</li>
+    <li>Dubi</li>
+    <li>Maliasa</li>
+    <li>Thiland</li>
+    <li>Singapoor</li>
+    <li>Veatenam</li>
+    <li>Avganistan</li>
+    <li>Bangladesh</li>
+    <li>Africa</li>
+  </ul>
+</div>
 
 </body>
 </html>
